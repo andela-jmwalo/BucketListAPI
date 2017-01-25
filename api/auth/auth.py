@@ -1,0 +1,62 @@
+from api import app
+from api.models import User, db
+from flask import request, jsonify, g
+from flask_httpauth import HTTPTokenAuth
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer, SignatureExpired, BadSignature
+
+auth = HTTPTokenAuth(scheme='Bearer')
+
+db.create_all()
+
+
+@auth.verify_token
+def verify_auth_token(token):
+    if not token:
+        return jsonify({"message": "supply token"}), 401
+    user_id = User.verify_auth_token(token=token)
+    if not token:
+        return False
+    g.user = db.session.query(User).filter_by(id=user_id).first()
+    return True
+
+
+def verify_password(username, password):
+    user = db.session.query(User).filter_by(username=username).first()
+    if not user or not user.verify_password(password):
+        return False
+    return user
+
+
+@app.route('/auth/register', methods=['POST'])
+def register():
+    username = request.json.get('username')
+    password = request.json.get('password')
+
+    if not username or not password:
+        return jsonify({'message': 'Please enter username and password'})
+
+    user = User.query.filter_by(username=username).first()
+    if user:
+        return jsonify({'message': 'User already exists!'})
+
+    user = User(username=username, password=password)
+    db.session.add(user)
+    db.session.commit()
+    return jsonify({'message': 'User registration successful!'})
+
+
+@app.route('/auth/login', methods=['POST'])
+def login():
+    username = request.json.get('username')
+    password = request.json.get('password')
+    if not username or not password:
+        return jsonify({'message': 'Please enter password and Username'})
+    user = verify_password(username, password)
+    if user:
+        g.user = user
+        token = g.user.generate_token()
+        return jsonify({
+            'token': token.decode('ascii')
+        })
+    else:
+        return jsonify({'message': 'invalid username/password'})
