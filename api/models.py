@@ -1,11 +1,8 @@
-from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer, BadSignature, SignatureExpired
-from api import app
+from api import db
 from datetime import datetime
-from flask import g
-
-db = SQLAlchemy(app)
+from flask import g, current_app
 
 
 class User(db.Model):
@@ -28,12 +25,12 @@ class User(db.Model):
         return check_password_hash(self.password_hash, password)
 
     def generate_token(self, expiration=6000):
-        s = Serializer(app.config['SECRET_KEY'], expiration)
+        s = Serializer(current_app.config['SECRET_KEY'], expiration)
         return s.dumps({'id': self.id})
 
     @staticmethod
     def verify_auth_token(token, expiration=6000):
-        s = Serializer(app.config['SECRET_KEY'], expiration)
+        s = Serializer(current_app.config['SECRET_KEY'], expiration)
         try:
             data = s.loads(token)
         except SignatureExpired:
@@ -59,15 +56,15 @@ class Bucketlist(db.Model):
     items = db.relationship('Item', backref='bucketlist', lazy='dynamic')
 
     def print_data(self):
-        items=Item.query.filter_by(bucketlist_id=self.id).all()
+        items = Item.query.filter_by(bucketlist_id=self.id).all()
         return {
-        "id": self.id,
-        "name" : self.name,
-        "description" : self.description,
-        "date_created" : self.date_created,
-        "date_modified" : self.date_modified,
-        "created_by" : self.created_by,
-        "items" : [item.print_data() for item in items]
+            "id": self.id,
+            "name": self.name,
+            "description": self.description,
+            "date_created": self.date_created,
+            "date_modified": self.date_modified,
+            "created_by": self.created_by,
+            "items": [item.print_data() for item in items]
         }
 
 
@@ -82,9 +79,9 @@ class Item(db.Model):
 
     def print_data(self):
         return {
-        "id": self.id,
-        "name" : self.name,
-        "date_created" : self.date_created,
-        "date_modified" : self.date_modified,
-        "done" : self.done
+            "id": self.id,
+            "name": self.name,
+            "date_created": self.date_created,
+            "date_modified": self.date_modified,
+            "done": self.done
         }

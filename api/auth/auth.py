@@ -1,4 +1,3 @@
-from api import app
 from api.models import User, db
 from flask import request, jsonify, g
 from flask_httpauth import HTTPTokenAuth
@@ -42,7 +41,7 @@ def register():
     user = User(username=username, password=password)
     db.session.add(user)
     db.session.commit()
-    return jsonify({'message': 'User registration successful!'})
+    return jsonify({'message': 'User registration successful!'}), 201
 
 
 @app.route('/auth/login', methods=['POST'])
