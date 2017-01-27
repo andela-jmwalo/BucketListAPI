@@ -1,11 +1,11 @@
 from api.models import User, db
-from flask import request, jsonify, g
+from flask import request, jsonify, g, Blueprint
 from flask_httpauth import HTTPTokenAuth
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer, SignatureExpired, BadSignature
 
 auth = HTTPTokenAuth(scheme='Bearer')
 
-db.create_all()
+auth_view = Blueprint('auth_view', __name__, url_prefix='/auth')
 
 
 @auth.verify_token
@@ -26,7 +26,12 @@ def verify_password(username, password):
     return user
 
 
-@app.route('/auth/register', methods=['POST'])
+@auth.error_handler
+def unauthorised_error():
+    return jsonify({'error' : "autheticate to access API" })
+
+
+@auth_view.route('/register', methods=['POST'])
 def register():
     username = request.json.get('username')
     password = request.json.get('password')
@@ -44,7 +49,7 @@ def register():
     return jsonify({'message': 'User registration successful!'}), 201
 
 
-@app.route('/auth/login', methods=['POST'])
+@auth_view.route('/login', methods=['POST'])
 def login():
     username = request.json.get('username')
     password = request.json.get('password')

@@ -10,8 +10,11 @@ def create_app(config_name):
     app.config.from_object(app_config[config_name])
 
     db.init_app(app)
+
+    from api.auth.auth import auth_view
+    app.register_blueprint(auth_view)
+
+    from api.bucketlist.bucketlist import bucket_view
+    app.register_blueprint(bucket_view)
+
     return app
-
-
-
-

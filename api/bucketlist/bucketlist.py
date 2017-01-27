@@ -1,13 +1,12 @@
 from api.auth.auth import auth
-from api import app
-from flask import request, abort, jsonify, g
+from flask import request, abort, jsonify, g, Blueprint
 from api.models import Bucketlist, db, User, Item
 from flask_httpauth import HTTPTokenAuth
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer, SignatureExpired, BadSignature
 
 auth = HTTPTokenAuth(scheme='Bearer')
 
-db.create_all()
+bucket_view = Blueprint('bucket_view', __name__, url_prefix='/bucketlists')
 
 
 @auth.verify_token
@@ -21,7 +20,7 @@ def verify_auth_token(token):
     return True
 
 
-@app.route("/bucketlists/", methods=["POST"])
+@bucket_view.route("/", methods=["POST"])
 @auth.login_required
 def add_new_bucketlist():
     name = request.json.get('name')
@@ -38,7 +37,7 @@ def add_new_bucketlist():
     return jsonify({'message': 'Bucketlist created successfully'})
 
 
-@app.route("/bucketlists/", methods=["GET"])
+@bucket_view.route("/", methods=["GET"])
 @auth.login_required
 def get_bucketlists():
     blist = db.session.query(Bucketlist).filter_by(created_by=g.user.id).all()
@@ -50,7 +49,7 @@ def get_bucketlists():
     return jsonify(list_bucketlist), 200
 
 
-@app.route("/bucketlists/<id>", methods=["GET"])
+@bucket_view.route("/<id>", methods=["GET"])
 @auth.login_required
 def get_bucketlist(id):
     result = db.session.query(Bucketlist).filter_by(
@@ -60,7 +59,7 @@ def get_bucketlist(id):
     return jsonify(result.print_data())
 
 
-@app.route("/bucketlists/<id>", methods=["PUT"])
+@bucket_view.route("/<id>", methods=["PUT"])
 @auth.login_required
 def update_bucketlist(id):
     name = request.json.get("name")
@@ -95,7 +94,7 @@ def update_bucketlist(id):
                 return jsonify({"message": "Updated"})
 
 
-@app.route("/bucketlists/<id>", methods=["DELETE"])
+@bucket_view.route("/<id>", methods=["DELETE"])
 @auth.login_required
 def delete_bucketlist(id):
     b = db.session.query(Bucketlist).filter_by(
@@ -107,7 +106,7 @@ def delete_bucketlist(id):
     return jsonify({'message': 'Bucketlist deleted!'})
 
 
-@app.route("/bucketlists/<id>/items/", methods=["POST"])
+@bucket_view.route("/<id>/items/", methods=["POST"])
 @auth.login_required
 def add_item(id):
     name = request.json.get('name')
@@ -130,7 +129,7 @@ def add_item(id):
     return jsonify({'message': 'Item added successfully'})
 
 
-@app.route("/bucketlists/<id>/<items>/<item_id>", methods=["PUT"])
+@bucket_view.route("/<id>/<items>/<item_id>", methods=["PUT"])
 @auth.login_required
 def update_item(id, items, item_id):
     bucket_list = db.session.query(Bucketlist).filter_by(
@@ -171,7 +170,7 @@ def update_item(id, items, item_id):
                 return jsonify({"message": "Item Updated"})
 
 
-@app.route("/bucketlists/<id>/items/<item_id>", methods=["DELETE"])
+@bucket_view.route("/<id>/items/<item_id>", methods=["DELETE"])
 @auth.login_required
 def delete_item(id, item_id):
     bucket_list = db.session.query(Bucketlist).filter_by(
