@@ -1,0 +1,13 @@
+language: python
+python:
+  - "3.5"
+  - "3.6"
+# command to install dependencies
+install:
+ - pip install -r requirements.txt
+# command to run tests
+script:
+ - pytest --cov=api  --cov-report=xml
+
+after_success:
+  - python-codacy-coverage -r coverage.xml
