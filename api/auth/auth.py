@@ -1,9 +1,7 @@
 from api.models import User, db
 from flask import request, jsonify, g, Blueprint
 from flask_httpauth import HTTPTokenAuth
-from itsdangerous import TimedJSONWebSignatureSerializer as Serializer, SignatureExpired, BadSignature
-import json
-
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer, SignatureExpired, BadSignatureß
 auth = HTTPTokenAuth(scheme='Bearer')
 
 auth_view = Blueprint('auth_view', __name__, url_prefix='/auth')
