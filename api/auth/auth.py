@@ -2,6 +2,7 @@ from api.models import User, db
 from flask import request, jsonify, g, Blueprint
 from flask_httpauth import HTTPTokenAuth
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer, SignatureExpired, BadSignature
+import json
 
 auth = HTTPTokenAuth(scheme='Bearer')
 
@@ -37,11 +38,11 @@ def register():
     password = request.json.get('password')
 
     if not username or not password:
-        return jsonify({'message': 'Please enter username and password'})
+        return jsonify({'message': 'Please enter username and password'}),400
 
     user = User.query.filter_by(username=username).first()
     if user:
-        return jsonify({'message': 'User already exists!'})
+        return jsonify({'message': 'User already exists!'}), 400
 
     user = User(username=username, password=password)
     db.session.add(user)
@@ -54,13 +55,13 @@ def login():
     username = request.json.get('username')
     password = request.json.get('password')
     if not username or not password:
-        return jsonify({'message': 'Please enter password and Username'})
+        return jsonify({'message': 'Please enter password and Username'}), 400
     user = verify_password(username, password)
     if user:
         g.user = user
-        token = g.user.generate_token()
+        token = g.user.generate_token().decode("ascii")
         return jsonify({
-            'token': token.decode('ascii')
+            "token": "Bearer {}".format(token)
         })
     else:
-        return jsonify({'message': 'invalid username/password'})
+        return jsonify({'message': 'invalid username/password'}), 400

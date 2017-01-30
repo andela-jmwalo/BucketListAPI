@@ -26,7 +26,7 @@ def add_new_bucketlist():
     name = request.json.get('name')
     description = request.json.get('description')
     if not name or not description:
-        return jsonify({'message': 'Please provide a bucketlist name and decription'})
+        return jsonify({'message': 'Please provide a bucketlist name and decription'}), 400
     check_bucket = db.session.query(Bucketlist).filter_by(name=name).first()
     if check_bucket:
         return jsonify({'message': 'Bucketlist exists'})
@@ -34,7 +34,7 @@ def add_new_bucketlist():
         name=name, description=description, created_by=g.user.id)
     db.session.add(bucketlist)
     db.session.commit()
-    return jsonify({'message': 'Bucketlist created successfully'})
+    return jsonify({'message': 'Bucketlist created successfully'}), 201
 
 
 @bucket_view.route("/", methods=["GET"])
@@ -55,8 +55,8 @@ def get_bucketlist(id):
     result = db.session.query(Bucketlist).filter_by(
         id=id, created_by=g.user.id).first()
     if not result:
-        return jsonify({'message': 'Please enter your bucketlist id'})
-    return jsonify(result.print_data())
+        return jsonify({'message': 'Please enter your bucketlist id'}), 400
+    return jsonify(result.print_data()), 200
 
 
 @bucket_view.route("/<id>", methods=["PUT"])
@@ -79,19 +79,19 @@ def update_bucketlist(id):
                 bl.description = description
                 db.session.add(bl)
                 db.session.commit()
-                return jsonify({'message': 'Decription updated!'})
+                return jsonify({'message': 'Decription updated!'}), 200
         else:
             if bl.description == description:
                 bl.name = name
                 db.session.add(bl)
                 db.session.commit()
-                return jsonify({'message': 'Name updated'})
+                return jsonify({'message': 'Name updated'}), 200
             else:
                 bl.name = name
                 bl.decription = description
                 db.session.add(bl)
                 db.session.commit()
-                return jsonify({"message": "Updated"})
+                return jsonify({"message": "Updated"}), 200
 
 
 @bucket_view.route("/<id>", methods=["DELETE"])
@@ -103,7 +103,7 @@ def delete_bucketlist(id):
         return jsonify({'message': 'The bucketlist does not exist'})
     db.session.delete(b)
     db.session.commit()
-    return jsonify({'message': 'Bucketlist deleted!'})
+    return jsonify({'message': 'Bucketlist deleted!'}), 204
 
 
 @bucket_view.route("/<id>/items/", methods=["POST"])

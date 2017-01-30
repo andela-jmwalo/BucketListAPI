@@ -1,6 +1,7 @@
 import unittest
 from api import db, create_app
 from api.models import User, Bucketlist, Item
+import json
 
 
 class BaseTest(unittest.TestCase):
@@ -33,3 +34,16 @@ class BaseTest(unittest.TestCase):
         db.session.remove()
         db.drop_all()
         self.context.pop()
+
+    def retrieve_token(self):
+        response = self.client.post(
+            '/auth/login',
+            data=json.dumps({
+                'username': 'user1',
+                'password': 'password1',
+            }),
+            content_type='application/json',
+        )
+        token = json.loads(response.get_data(as_text=True)).get('token')
+        print(">>>>>>>  ", token)
+        return token
