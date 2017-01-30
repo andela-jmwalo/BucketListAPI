@@ -9,7 +9,7 @@ cd into the BucketListAPI folder
 ```
 cd BucketListAPI
 ```
-Install requirements
+### Install requirements
 ```
 pip install -r requirements.txt
 ```
@@ -17,7 +17,7 @@ to Run the program :
 ```
 python run.py
 
-## Tests
+### Tests
 To run the tests 
 ```
 pytest
