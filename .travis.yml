@@ -15,3 +15,6 @@ script:
 
 after_success:
   - python-codacy-coverage -r coverage.xml
+notifications:
+  email: false
+
