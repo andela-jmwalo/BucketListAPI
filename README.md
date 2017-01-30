@@ -16,8 +16,8 @@ pip install -r requirements.txt
 to Run the program :
 ```
 python run.py
-
-To run the tests 
+```
+To run the tests: 
 ```
 pytest
 ```
