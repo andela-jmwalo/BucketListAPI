@@ -126,7 +126,7 @@ def add_item(id):
     db.session.add(item)
     db.session.commit()
 
-    return jsonify({'message': 'Item added successfully'})
+    return jsonify({'message': 'Item added successfully'}), 201
 
 
 @bucket_view.route("/<id>/<items>/<item_id>", methods=["PUT"])
@@ -139,7 +139,7 @@ def update_item(id, items, item_id):
 
     name = request.json.get("name")
     done = request.json.get("done")
-    
+
     if not name and not done:
         return jsonify({"message": "You need to supply something to modify"})
 
@@ -155,19 +155,19 @@ def update_item(id, items, item_id):
             else:
                 db.session.add(bl_item)
                 db.session.commit()
-                return jsonify({'message': 'Item Status updated!'})
+                return jsonify({'message': 'Item Status updated!'}), 200
         else:
             if bl_item.done == done:
                 bl_item.name = name
                 db.session.add(bl_item)
                 db.session.commit()
-                return jsonify({'message': 'Item Name updated'})
+                return jsonify({'message': 'Item Name updated'}), 200
             else:
                 bl_item.name = name
                 bl_item.done = done
                 db.session.add(bl_item)
                 db.session.commit()
-                return jsonify({"message": "Item Updated"})
+                return jsonify({"message": "Item Updated"}), 200
 
 
 @bucket_view.route("/<id>/items/<item_id>", methods=["DELETE"])
@@ -185,4 +185,4 @@ def delete_item(id, item_id):
     db.session.delete(item)
     db.session.commit()
 
-    return jsonify({'message': 'Item Deleted'}), 200
+    return jsonify({'message': 'Item Deleted'}), 204

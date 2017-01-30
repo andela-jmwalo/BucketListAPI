@@ -20,14 +20,15 @@ class BaseTest(unittest.TestCase):
         item1 = Item(
             name="Bungee jumping",
             done='False',
+            bucketlist_id=1
         )
-        item1.bucketlist = bucketlist1
+        # item1.bucketlist = bucketlist1
         item2 = Item(
             name="Zip lining",
             done='True',
-
+            bucketlist_id=1
         )
-        item2.bucketlist = bucketlist1
+        # item2.bucketlist = bucketlist1
         db.session.add_all([user1, bucketlist1, item1, item2, ])
 
     def tearDown(self):
