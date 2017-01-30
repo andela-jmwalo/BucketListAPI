@@ -2,7 +2,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer, BadSignature, SignatureExpired
 from api import db
 from datetime import datetime
-from flask import g, current_app
+from flask import current_app
 
 
 class User(db.Model):
@@ -38,7 +38,6 @@ class User(db.Model):
         except BadSignature:
             return False
         user_id = data['id']
-        #g.user = db.session.query(User).filter_by(id=user_id).first()
         return user_id
 
     def __repr__(self):
