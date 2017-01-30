@@ -1,10 +1,8 @@
 from api.auth.auth import auth
-from flask import request, abort, jsonify, g, Blueprint
+from flask import request, jsonify, g, Blueprint
 from api.models import Bucketlist, db, User, Item
 from flask_httpauth import HTTPTokenAuth
-from itsdangerous import TimedJSONWebSignatureSerializer as Serializer, SignatureExpired, BadSignature
 
-auth = HTTPTokenAuth(scheme='Bearer')
 
 bucket_view = Blueprint('bucket_view', __name__, url_prefix='/bucketlists')
 
