@@ -18,6 +18,7 @@ to Run the program :
 python run.py
 
 ### Tests
+```
 To run the tests 
 ```
 pytest
