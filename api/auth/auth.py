@@ -25,18 +25,13 @@ def verify_password(username, password):
     return user
 
 
-@auth.error_handler
-def unauthorised_error():
-    return jsonify({'error' : "autheticate to access API" })
-
-
 @auth_view.route('/register', methods=['POST'])
 def register():
     username = request.json.get('username')
     password = request.json.get('password')
 
     if not username or not password:
-        return jsonify({'message': 'Please enter username and password'}),400
+        return jsonify({'message': 'Please enter username and password'}), 400
 
     user = User.query.filter_by(username=username).first()
     if user:

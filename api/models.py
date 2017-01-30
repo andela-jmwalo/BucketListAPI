@@ -1,5 +1,5 @@
 from werkzeug.security import generate_password_hash, check_password_hash
-from itsdangerous import TimedJSONWebSignatureSerializer as Serializer, BadSignature, SignatureExpired
+from itsdangerous import TimedJSONWebSignatureSerializeras Serializer,BadSignature, SignatureExpired
 from api import db
 from datetime import datetime
 from flask import current_app

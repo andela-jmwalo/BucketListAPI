@@ -1,7 +1,7 @@
 from flask import Flask
-from config.config import app_config
 from flask_sqlalchemy import SQLAlchemy
 
+from config.config import app_config
 db = SQLAlchemy()
 
 

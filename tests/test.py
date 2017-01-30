@@ -46,5 +46,4 @@ class BaseTest(unittest.TestCase):
             content_type='application/json',
         )
         token = json.loads(response.get_data(as_text=True)).get('token')
-        print(">>>>>>>  ", token)
         return token
