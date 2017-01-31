@@ -40,7 +40,7 @@ def add_new_bucketlist():
 def get_bucketlists():
     blist = db.session.query(Bucketlist).filter_by(created_by=g.user.id).all()
     if not blist:
-        return jsonify({'message': 'Currently you have no bucketlists'})
+        return jsonify({'message': 'Currently you have no bucketlists'}), 404
     list_bucketlist = []
     for row in blist:
         list_bucketlist.append(row.print_data())
