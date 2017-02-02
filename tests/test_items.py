@@ -25,10 +25,10 @@ class TestItem(BaseTest):
                                             'application/json'})
         self.assertEqual(response.status_code, 200)
 
-    def test_delete_bucketlist(self):
+    def test_delete_item(self):
         response = self.client.delete("/bucketlists/1/items/2",
                                       headers={"Authorization":
                                                self.retrieve_token(),
                                                'Content-Type':
                                                'application/json'})
-        self.assertEqual(response.status_code, 204)
+        self.assertEqual(response.status_code, 200)

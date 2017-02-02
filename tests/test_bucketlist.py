@@ -63,4 +63,4 @@ class TestBucketList(BaseTest):
             '/bucketlists/1', headers={"Authorization":
                                        self.retrieve_token(),
                                        'Content-Type': 'application/json'})
-        self.assertEqual(response.status_code, 204)
+        self.assertEqual(response.status_code, 200)
