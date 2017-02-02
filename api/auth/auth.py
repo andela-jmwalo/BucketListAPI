@@ -7,15 +7,7 @@ auth = HTTPTokenAuth(scheme='Bearer')
 auth_view = Blueprint('auth_view', __name__, url_prefix='/auth')
 
 
-@auth.verify_token
-def verify_auth_token(token):
-    if not token:
-        return jsonify({"message": "supply token"}), 401
-    user_id = User.verify_auth_token(token=token)
-    if not token:
-        return False
-    g.user = db.session.query(User).filter_by(id=user_id).first()
-    return True
+
 
 
 def verify_password(username, password):
