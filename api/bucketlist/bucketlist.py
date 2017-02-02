@@ -1,7 +1,6 @@
 from api.auth.auth import auth
-from flask import request, jsonify, g, Blueprint
+from flask import request, jsonify, g, Blueprint, url_for
 from api.models import Bucketlist, db, User, Item
-from flask_httpauth import HTTPTokenAuth
 
 
 bucket_view = Blueprint('bucket_view', __name__, url_prefix='/bucketlists')
@@ -23,28 +22,57 @@ def verify_auth_token(token):
 def add_new_bucketlist():
     name = request.json.get('name')
     description = request.json.get('description')
-    if not name or not description:
-        return jsonify({'message': 'Please provide a bucketlist name and decription'}), 400
+
+    if not name and not description:
+        return jsonify({"message": "Enter name or description"}), 400
+
     check_bucket = db.session.query(Bucketlist).filter_by(name=name).first()
     if check_bucket:
-        return jsonify({'message': 'Bucketlist exists'})
-    bucketlist = Bucketlist(
-        name=name, description=description, created_by=g.user.id)
-    db.session.add(bucketlist)
-    db.session.commit()
+        return jsonify({'message': 'Bucketlist exists'}), 400
+
+    if name and description:
+
+        bucketlist = Bucketlist(
+            name=name, description=description, created_by=g.user.id)
+        db.session.add(bucketlist)
+        db.session.commit()
+    else:
+        bucketlist = Bucketlist(
+            name=name, created_by=g.user.id)
+        db.session.add(bucketlist)
+        db.session.commit()
+
     return jsonify({'message': 'Bucketlist created successfully'}), 201
 
 
 @bucket_view.route("/", methods=["GET"])
 @auth.login_required
 def get_bucketlists():
-    blist = db.session.query(Bucketlist).filter_by(created_by=g.user.id).all()
-    if not blist:
-        return jsonify({'message': 'Currently you have no bucketlists'}), 404
+    page = int(request.args.get('page', 1))
+    limit = min(int(request.args.get('limit', 20)), 20)
+    search = request.args.get('q', '')
+
+    bucketlist = Bucketlist.query.filter_by(
+        created_by=g.user.id).filter(
+        Bucketlist.name.like('%{}%'.format(search))).paginate(
+        page=page, per_page=limit)
+
+    if not bucketlist.items:
+        return jsonify({'message': 'Bucketlist does not exist'}), 404
+
     list_bucketlist = []
-    for row in blist:
-        list_bucketlist.append(row.print_data())
-    return jsonify(list_bucketlist), 200
+    for bucket in bucketlist.items:
+        list_bucketlist.append(bucket.return_data())
+
+    return jsonify({
+        'Bucketlist': list_bucketlist,
+        'next': url_for(
+            request.endpoint, page=bucketlist.next_num, limit=limit,
+            _external=True) if bucketlist.has_next else None,
+        'prev': url_for(
+            request.endpoint, page=bucketlist.prev_num, limit=limit,
+            _external=True) if bucketlist.has_prev else None,
+    }), 200
 
 
 @bucket_view.route("/<id>", methods=["GET"])
@@ -64,30 +92,30 @@ def update_bucketlist(id):
     description = request.json.get("description")
     if not name and not description:
         return jsonify({"message": "You need to supply something to modify"})
-    bl = db.session.query(Bucketlist).filter_by(
+    bucket = db.session.query(Bucketlist).filter_by(
         id=id, created_by=g.user.id).first()
 
-    if not bl:
+    if not bucket:
         return jsonify({"message": "Invalid bucketlist, might exist but doesn't belong to users"})
     if name or description:
-        if bl.name == name:
-            if bl.description == description:
+        if bucket.name == name:
+            if bucket.description == description:
                 return jsonify({"message": "You have entered the same values, nothing to update"})
             else:
-                bl.description = description
-                db.session.add(bl)
+                bucket.description = description
+                db.session.add(bucket)
                 db.session.commit()
                 return jsonify({'message': 'Decription updated!'}), 200
         else:
-            if bl.description == description:
-                bl.name = name
-                db.session.add(bl)
+            if bucket.description == description:
+                bucket.name = name
+                db.session.add(bucket)
                 db.session.commit()
                 return jsonify({'message': 'Name updated'}), 200
             else:
-                bl.name = name
-                bl.decription = description
-                db.session.add(bl)
+                bucket.name = name
+                bucket.decription = description
+                db.session.add(bucket)
                 db.session.commit()
                 return jsonify({"message": "Updated"}), 200
 
@@ -95,13 +123,13 @@ def update_bucketlist(id):
 @bucket_view.route("/<id>", methods=["DELETE"])
 @auth.login_required
 def delete_bucketlist(id):
-    b = db.session.query(Bucketlist).filter_by(
+    bucket = db.session.query(Bucketlist).filter_by(
         id=id, created_by=g.user.id).first()
-    if b is None:
+    if bucket is None:
         return jsonify({'message': 'The bucketlist does not exist'})
-    db.session.delete(b)
+    db.session.delete(bucket)
     db.session.commit()
-    return jsonify({'message': 'Bucketlist deleted!'}), 204
+    return jsonify({'message': 'Bucketlist deleted!'}), 200
 
 
 @bucket_view.route("/<id>/items/", methods=["POST"])
@@ -111,9 +139,9 @@ def add_item(id):
 
     if name is None:
         return jsonify({'message': 'please provide item name'})
-    b = db.session.query(Bucketlist).filter_by(
+    bucket = db.session.query(Bucketlist).filter_by(
         id=id, created_by=g.user.id)
-    if b is None:
+    if bucket is None:
         return jsonify({'message': 'Bucketlist does not exist'})
     item = db.session.query(Item).filter_by(bucketlist_id=id,
                                             name=name).first()
@@ -141,29 +169,29 @@ def update_item(id, items, item_id):
     if not name and not done:
         return jsonify({"message": "You need to supply something to modify"})
 
-    bl_item = db.session.query(Item).filter_by(
+    bucket_item = db.session.query(Item).filter_by(
         id=id, bucketlist_id=id).first()
 
-    if not bl_item:
+    if not bucket_item:
         return jsonify({"message": "Invalid Item Id"})
     if name or done:
-        if bl_item.name == name:
-            if bl_item.done == done:
+        if bucket_item.name == name:
+            if bucket_item.done == done:
                 return jsonify({"message": "Same values entered"})
             else:
-                db.session.add(bl_item)
+                db.session.add(bucket_item)
                 db.session.commit()
                 return jsonify({'message': 'Item Status updated!'}), 200
         else:
-            if bl_item.done == done:
-                bl_item.name = name
-                db.session.add(bl_item)
+            if bucket_item.done == done:
+                bucket_item.name = name
+                db.session.add(bucket_item)
                 db.session.commit()
                 return jsonify({'message': 'Item Name updated'}), 200
             else:
-                bl_item.name = name
-                bl_item.done = done
-                db.session.add(bl_item)
+                bucket_item.name = name
+                bucket_item.done = done
+                db.session.add(bucket_item)
                 db.session.commit()
                 return jsonify({"message": "Item Updated"}), 200
 
@@ -183,4 +211,4 @@ def delete_item(id, item_id):
     db.session.delete(item)
     db.session.commit()
 
-    return jsonify({'message': 'Item Deleted'}), 204
+    return jsonify({'message': 'Item Deleted'}), 200
