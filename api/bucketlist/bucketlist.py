@@ -199,9 +199,9 @@ def update_item(id, items, item_id):
 @bucket_view.route("/<id>/items/<item_id>", methods=["DELETE"])
 @auth.login_required
 def delete_item(id, item_id):
-    bucket_list = db.session.query(Bucketlist).filter_by(
+    bucket = db.session.query(Bucketlist).filter_by(
         id=id, created_by=g.user.id)
-    if not bucket_list:
+    if not bucket:
         return jsonify({'messsage': 'Please Enter Your Bucketlist id in url'})
     item = db.session.query(Item).filter_by(
         id=item_id, bucketlist_id=id).first()
