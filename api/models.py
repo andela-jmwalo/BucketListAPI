@@ -57,7 +57,7 @@ class Bucketlist(db.Model):
     created_by = db.Column(db.Integer, db.ForeignKey('user.id'))
     items = db.relationship('Item', backref='bucketlist', lazy='dynamic')
 
-    def print_data(self):
+    def return_data(self):
         items = Item.query.filter_by(bucketlist_id=self.id).all()
         return {
             "id": self.id,
@@ -66,7 +66,7 @@ class Bucketlist(db.Model):
             "date_created": self.date_created,
             "date_modified": self.date_modified,
             "created_by": self.created_by,
-            "items": [item.print_data() for item in items]
+            "items": [item.return_data() for item in items]
         }
 
 
@@ -79,7 +79,7 @@ class Item(db.Model):
     done = db.Column(db.Boolean, default=False)
     bucketlist_id = db.Column(db.Integer, db.ForeignKey('bucketlist.id'))
 
-    def print_data(self):
+    def return_data(self):
         return {
             "id": self.id,
             "name": self.name,
