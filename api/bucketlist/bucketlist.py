@@ -82,7 +82,7 @@ def get_bucketlist(id):
         id=id, created_by=g.user.id).first()
     if not result:
         return jsonify({'message': 'Please enter your bucketlist id'}), 400
-    return jsonify(result.print_data()), 200
+    return jsonify(result.return_data()), 200
 
 
 @bucket_view.route("/<id>", methods=["PUT"])
